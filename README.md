@@ -1,10 +1,24 @@
 # glicko2
 
-A Clojure library designed to ... well, that part is up to you.
+Implementation of the Glicko-2 rating algorithm. See http://www.glicko.net/glicko/glicko2.pdf.
 
 ## Usage
 
 FIXME
+
+## Tests
+
+To run the Clojure tests
+
+    lein test
+
+To run the Clojurescript tests using NodeJS
+
+    lein do javac, doo node node-test
+
+To run the Clojurescript tests using http://phantomjs.org/
+
+    lein do javac, doo phantom test
 
 ## License
 
