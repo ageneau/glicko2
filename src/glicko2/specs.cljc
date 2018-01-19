@@ -1,5 +1,6 @@
 (ns glicko2.specs
-  (:require [clojure.spec.alpha :as s]))
+  (:require #?(:clj [clojure.spec.alpha :as s]
+               :cljs [cljs.spec.alpha :as s])))
 
 (s/def ::rating number?)
 (s/def ::rd number?)

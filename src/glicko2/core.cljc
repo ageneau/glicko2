@@ -1,8 +1,9 @@
 (ns glicko2.core
   (:require [glicko2.math :as math]
             [glicko2.specs :as specs]
-            [clojure.spec.alpha :as s]
-            [clojure.spec.test.alpha :as stest]))
+            #?(:clj [clojure.spec.alpha :as s]
+               :cljs [cljs.spec.alpha :as s])
+            #?(:clj [clojure.spec.test.alpha :as stest])))
 
 (def DEFAULT_RATING 1500)
 (def DEFAULT_DEVIATION 350)
@@ -212,5 +213,5 @@
                      :tau ::specs/tau)
         :ret ::specs/players)
 
-(stest/instrument `compute-ratings)
+#?(:clj (stest/instrument `compute-ratings))
 

@@ -13,6 +13,9 @@ Add the necessary dependency to your project:
 ## Usage
 
 ```clojure
+(ns glicko2.core-test
+  (:require [glicko2.core :as glicko2]))
+
 (let [
       ;; First we define the rating parameters for the players we want to consider for the rating period
       player1 {:rating 1500
