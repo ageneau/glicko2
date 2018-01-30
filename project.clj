@@ -1,4 +1,4 @@
-(defproject ageneau/glicko2 "0.1.0"
+(defproject ageneau/glicko2 "0.1.1"
   :description "Implementation of the Glicko-2 rating algorithm"
   :author "Sylvain Ageneau"
   :url "https://github.com/ageneau/glicko2"

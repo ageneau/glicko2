@@ -32,20 +32,19 @@
   (/ rd MULTIPLIER))
 
 (defn get-glicko2-rating[players player]
-  (convert-rating-to-glicko2-scale (:rating (nth players player))))
+  (convert-rating-to-glicko2-scale (:rating (get players player))))
 
 (defn get-glicko2-rating-deviation[players player]
-  (convert-rating-deviation-to-glicko2-scale (:rd (nth players player))))
+  (convert-rating-deviation-to-glicko2-scale (:rd (get players player))))
 
 (defn get-rating[players player]
-  (:rating (nth players player)))
+  (:rating (get players player)))
 
 (defn get-rating-deviation[players player]
-  (:rd (nth players player)))
-
+  (:rd (get players player)))
 
 (defn get-volatility [players player]
-  (:vol (nth players player)))
+  (:vol (get players player)))
 
 (defn participated? [result player]
   (or (= (:player1 result) player)
@@ -76,7 +75,9 @@
                    (* 3 (/ (math/expt deviation 2)
                            (math/expt Math/PI 2)))))))
 
-(defn e [player-rating opp-rating opp-deviation]
+(defn e
+  "expected fractional score of a game"
+  [player-rating opp-rating opp-deviation]
   (/ 1
      (+ 1
         (math/exp (* -1
@@ -189,29 +190,30 @@
                           (outcome-based-rating players player results))))
            :rd (convert-rating-deviation-to-original-glicko-scale new-phi)})))))
 
+(defn expected-game-outcome
+  "expected fractional score of a game"
+  [player1 player2]
+  (e (convert-rating-to-glicko2-scale (:rating player1))
+     (convert-rating-to-glicko2-scale (:rating player2))
+     (convert-rating-deviation-to-glicko2-scale (:rd player2))))
+
 (defn compute-ratings
   "Compute the updated ratings after a rating period.
   returns a list of players with updated ratings"
   [players results tau]
   (let [participants (get-participants results)]
-    (map (fn [player]
-           (if (contains? participants player)
-             (let [res (get-results results player)]
-               (if (pos? (count res))
-                 (calculate-new-rating players player res tau)
-                 {:rating (convert-rating-to-original-glicko-scale (get-glicko2-rating players player))
-                  :rd (convert-rating-deviation-to-original-glicko-scale (calculate-new-rd (get-glicko2-rating-deviation players player)
-                                                                                           (get-volatility players player)))
-                  :vol (get-volatility players player)}))
-             player))
-         (range (count players)))))
+    (into (empty players)
+          (for [[player-id player] players]
+            (vector player-id
+                    (if (contains? participants player-id)
+                      (let [res (get-results results player-id)]
+                        (if (pos? (count res))
+                          (calculate-new-rating players player-id res tau)
+                          {:rating (convert-rating-to-original-glicko-scale (get-glicko2-rating players player-id))
+                           :rd (convert-rating-deviation-to-original-glicko-scale (calculate-new-rd (get-glicko2-rating-deviation players player-id)
+                                                                                             (get-volatility players player-id)))
+                           :vol (get-volatility players player-id)}))
+                      player))))))
 
-
-(s/fdef compute-ratings
-        :args (s/cat :players ::specs/players
-                     :results ::specs/results
-                     :tau ::specs/tau)
-        :ret ::specs/players)
-
-#?(:clj (stest/instrument `compute-ratings))
+#?(:clj (stest/instrument (stest/instrumentable-syms)))
 
