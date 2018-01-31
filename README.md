@@ -7,7 +7,7 @@ Implementation of the Glicko-2 rating algorithm. See http://www.glicko.net/glick
 Add the necessary dependency to your project:
 
 ```clojure
-[ageneau/glicko2 "0.1.1"]
+[ageneau/glicko2 "0.1.2"]
 ```
 
 ## Usage
@@ -45,7 +45,7 @@ Add the necessary dependency to your project:
       ;; Reasonable choices are between 0.3 and 1.2
       tau 0.5
 
-      ;; The compute-rating function returns an array of player with updated ratings
+      ;; The compute-rating function returns an array of players with updated ratings
       new-ratings (glicko2/compute-ratings players results tau)
 
       ;; The expected-game-outcome function returns a value between 0 and 1 representing the expected fractional score of a game

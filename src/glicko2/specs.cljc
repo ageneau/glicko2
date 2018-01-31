@@ -1,6 +1,7 @@
 (ns glicko2.specs
   (:require #?(:clj [clojure.spec.alpha :as s]
-               :cljs [cljs.spec.alpha :as s])))
+               :cljs [cljs.spec.alpha :as s])
+            [clojure.set :as set]))
 
 
 (s/def ::player-id any?)
@@ -29,6 +30,10 @@
 
 (s/def ::tau number?)
 (s/def ::expected-score ::percentage)
+
+(defn valid-results? [players results]
+  (and (set/superset? (set (keys players)) (set (map :player1 results)))
+       (set/superset? (set (keys players)) (set (map :player2 results)))))
 
 (s/fdef glicko2.core/convert-rating-to-original-glicko-scale
         :args (s/cat :rating ::rating)
@@ -109,7 +114,7 @@
                      :phi number?
                      :v number?
                      :a number?
-                     :tau number?)
+                     :tau ::tau)
         :ret number?)
 
 (s/fdef glicko2.core/outcome-based-rating
@@ -145,4 +150,6 @@
         :args (s/cat :players ::players
                      :results ::results
                      :tau ::tau)
-        :ret ::players)
+        :ret ::players
+        :fn (fn [{:keys [args]}]
+              (valid-results? (:players args) (:results args))))

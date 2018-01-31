@@ -91,18 +91,18 @@
   [players player results]
   (math/expt (loop [results results
                     v 0.0]
-               (let [result (first results)
-                     opponent (opponent result player)
-                     e (e (get-glicko2-rating players player)
-                          (get-glicko2-rating players opponent)
-                          (get-glicko2-rating-deviation players opponent))
-                     incv (* (math/expt (g (get-glicko2-rating-deviation players opponent)) 2)
-                             e
-                             (- 1 e))]
-                 (if (next results)
+               (if (seq results)
+                 (let [result (first results)
+                       opponent (opponent result player)
+                       e (e (get-glicko2-rating players player)
+                            (get-glicko2-rating players opponent)
+                            (get-glicko2-rating-deviation players opponent))
+                       incv (* (math/expt (g (get-glicko2-rating-deviation players opponent)) 2)
+                               e
+                               (- 1 e))]
                    (recur (next results)
-                          (+ v incv))
-                   (+ v incv))))
+                          (+ v incv)))
+                 v))
              -1))
 
 (defn f [x delta phi v a tau]
@@ -123,20 +123,19 @@
 (defn outcome-based-rating [players player results]
   (loop [results results
          outcome-based-rating 0.0]
-    (let [result (first results)
-          opponent (opponent result player)
-          score (score result player)
-          inc-outcome (* (g (get-glicko2-rating-deviation players opponent))
-                         (- score
-                            (e (get-glicko2-rating players player)
-                               (get-glicko2-rating players opponent)
-                               (get-glicko2-rating-deviation players opponent))))]
-      (if (next results)
+    (if (seq results)
+      (let [result (first results)
+            opponent (opponent result player)
+            score (score result player)
+            inc-outcome (* (g (get-glicko2-rating-deviation players opponent))
+                           (- score
+                              (e (get-glicko2-rating players player)
+                                 (get-glicko2-rating players opponent)
+                                 (get-glicko2-rating-deviation players opponent))))]
         (recur (next results)
                (+ outcome-based-rating
-                  inc-outcome))
-        (+ outcome-based-rating
-           inc-outcome)))))
+                  inc-outcome)))
+      outcome-based-rating)))
 
 (defn delta
   "estimated improvement in rating"
@@ -201,6 +200,9 @@
   "Compute the updated ratings after a rating period.
   returns a list of players with updated ratings"
   [players results tau]
+  (s/assert (:fn (s/get-spec `compute-ratings)) {:args {:players players
+                                                        :results results
+                                                        :tau tau }})
   (let [participants (get-participants results)]
     (into (empty players)
           (for [[player-id player] players]
@@ -211,7 +213,7 @@
                           (calculate-new-rating players player-id res tau)
                           {:rating (convert-rating-to-original-glicko-scale (get-glicko2-rating players player-id))
                            :rd (convert-rating-deviation-to-original-glicko-scale (calculate-new-rd (get-glicko2-rating-deviation players player-id)
-                                                                                             (get-volatility players player-id)))
+                                                                                                    (get-volatility players player-id)))
                            :vol (get-volatility players player-id)}))
                       player))))))
 
